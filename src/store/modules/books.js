@@ -1,6 +1,5 @@
-import { updateStuBookList } from '@/api/stu_info'
-import { getStuBookList } from '@/api/stu_info'
-import { getBookList, getBookContent } from '@/api/books'
+import { getUserBookList } from '@/api/user'
+import { getBookList, getBookContent,getBookInfo,getClassify,getBookByClassifyId } from '@/api/books'
 import { getToken } from '@/utils/auth'
 
 const mutations = {
@@ -58,25 +57,14 @@ export default {
   },
   mutations,
   actions: {
-    getStuBookList({ commit, state }) {
+
+    getUserBookList({ state }, { page, pageSize }) {
       return new Promise((resolve, reject) => {
-        getStuBookList(state.token).then((response) => {
+        getUserBookList(state.token,page, pageSize).then((response) => {
           const { data } = response
           if (!data) {
             reject('请求数据失败.')
           }
-          const { bookId, bookName, author, publishingHouse, publishDate, pages, ISBN, price, briefIntroduction, authorIntroduction } = data
-          commit('SET_BOOKID', bookId)
-          commit('SET_BOOKNAME', bookName)
-          commit('SET_AUTHOR', author)
-          commit('SET_PUBLISHINGHOUSE', publishingHouse)
-          commit('SET_PUBLISHDATE', publishDate)
-          commit('SET_PAGES', pages)
-          commit('SET_ISBN', ISBN)
-          commit('SET_PRICE', price)
-          commit('SET_BRIEFINTRODUCTION', briefIntroduction)
-          commit('SET_AUTHORINTRODUCTION', authorIntroduction)
-          console.log('right-major')
           resolve(data)
         }).catch(error => {
           reject(error)
@@ -110,11 +98,26 @@ export default {
       })
     },
 
-    updateStuBookList({ state }, bookList) {
+    getBookContent({ commit }, bookId) {
       return new Promise((resolve, reject) => {
-        updateStuBookList(state.token, bookList).then((response) => {
+        getBookContent(bookId).then((response) => {
           const { data } = response
-          console.log(response)
+          if (!data) {
+            reject('请求数据失败.')
+          }
+          const { content } = data
+          commit('SET_CONTENT', content)
+          resolve(data)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+
+    getBookByClassifyId({ commit }, classifyId){
+      return new Promise((resolve, reject) => {
+        getBookByClassifyId(classifyId).then((response) => {
+          const { data } = response
           if (!data) {
             reject('请求数据失败.')
           }
@@ -125,15 +128,29 @@ export default {
       })
     },
 
-    getBookContent({ commit }, bookId) {
+    getBookInfo({ commit }, bookId) {
       return new Promise((resolve, reject) => {
-        getBookContent(bookId).then((response) => {
+        getBookInfo(bookId).then((response) => {
           const { data } = response
           if (!data) {
             reject('请求数据失败.')
           }
           const { content } = data
           commit('SET_CONTENT', content)
+          resolve(data)
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+
+    getClassify({ commit }) {
+      return new Promise((resolve, reject) => {
+        getClassify().then((response) => {
+          const { data } = response
+          if (!data) {
+            reject('请求数据失败.')
+          }
           resolve(data)
         }).catch(error => {
           reject(error)

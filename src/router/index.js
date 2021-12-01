@@ -33,6 +33,9 @@ import nestedRouter from './modules/nested'
   }
  */
 
+
+
+
 /**
  * constantRoutes
  * a base page that does not have permission requirements
@@ -73,24 +76,38 @@ export const constantRoutes = [
   {
     path: '/',
     component: Layout,
+    redirect: '/index',
     children: [
       {
         path: 'index',
         component: () => import('@/views/dashboard/index'),
         name: '主页',
-        meta: { title: '主页', icon: 'icon', noCache: true }
+        meta: { title: '主页', icon: 'dashboard', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/bookSelection',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/bookSelection/index'),
+        name: '阅读文章',
+        meta: { title: '阅读文章', icon: 'documentation', noCache: true }
       }
     ]
   },
   {
     path: '/study',
     component: Layout,
+    hidden: true,
     children: [
       {
         path: 'index',
         component: () => import('@/views/study/index'),
-        name: '《故事新编》',
-        meta: { title: '《故事新编》', icon: 'icon', noCache: true }
+        name: '文章阅读',
+        meta: { title: '文章阅读', icon: 'icon', noCache: true }
       }
     ]
   },
@@ -98,6 +115,7 @@ export const constantRoutes = [
   {
     path: '/studyLook',
     component: Layout,
+    hidden: true,
     children: [
       {
         path: 'index',
@@ -111,6 +129,7 @@ export const constantRoutes = [
   {
     path: '/studyQuestion',
     component: Layout,
+    hidden: true,
     children: [
       {
         path: 'index',
@@ -123,24 +142,13 @@ export const constantRoutes = [
   {
     path: '/exam',
     component: Layout,
+    hidden: true,
     children: [
       {
         path: 'index',
         component: () => import('@/views/exam/index'),
-        name: '《故事新编》测试',
-        meta: { title: '《故事新编》测试', icon: 'icon', noCache: true }
-      }
-    ]
-  },
-  {
-    path: '/bookSelection',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/bookSelection/index'),
-        name: '阅读文章',
-        meta: { title: '阅读文章', icon: 'icon', noCache: true }
+        name: '测试',
+        meta: { title: '测试', icon: 'icon', noCache: true }
       }
     ]
   },
@@ -152,19 +160,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/examSelection/index'),
         name: '他问我答',
-        meta: { title: '他问我答', icon: 'icon', noCache: true }
-      }
-    ]
-  },
-  {
-    path: '/uploadFile',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/uploadFile/index'),
-        name: '上传文章',
-        meta: { title: '上传文章', icon: 'icon', noCache: true }
+        meta: { title: '他问我答', icon: 'edit', noCache: true }
       }
     ]
   },
@@ -176,23 +172,25 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/discussionBoard/index'),
         name: '讨论区',
-        meta: { title: '讨论区', icon: 'icon', noCache: true }
+        meta: { title: '讨论区', icon: 'education', noCache: true }
       }
     ]
   },
   {
     path: '/discussion',
     component: Layout,
+    hidden: true,
     children: [
       {
-        path: 'index',
-        component: () => import('@/views/discussion/index'),
+        path: 'index/:id',
+        component: () => import('@/views/discussion/index/'),
         name: '讨论',
         meta: { title: '讨论', icon: 'icon', noCache: true }
       }
     ]
   },
 
+  /*
   {
     path: '/practiceSelection',
     component: Layout,
@@ -205,6 +203,8 @@ export const constantRoutes = [
       }
     ]
   },
+  */
+ /*
   {
     path: '/book',
     component: Layout,
@@ -217,7 +217,8 @@ export const constantRoutes = [
       }
     ]
   },
-
+*/
+/* 
   {
     path: '/books',
     component: Layout,
@@ -230,7 +231,8 @@ export const constantRoutes = [
       }
     ]
   },
-
+*/
+/*
   {
     path: '/profile',
     component: Layout,
@@ -243,7 +245,8 @@ export const constantRoutes = [
       }
     ]
   },
-
+*/
+/*
   {
     path: '/select',
     component: Layout,
@@ -256,6 +259,7 @@ export const constantRoutes = [
       }
     ]
   },
+  */
   {
     path: '/profile',
     component: Layout,
@@ -279,8 +283,34 @@ export const constantRoutes = [
 export const asyncRoutes = [
 
   // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+  { path: '*', redirect: '/404', hidden: true },
+
+  
+  {
+    path: '/uploadFile',
+    component: Layout,
+    meta: { roles: ['admin']},
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/uploadFile/index'),
+        name: '上传文章',
+        meta: { title: '上传文章', icon: 'pdf', noCache: true }
+      }
+    ]
+  },
 ]
+
+/*
+const User = {
+  template: '<div>Hello World</div>'
+}
+export const myRoutes=[
+  // 动态路径参数 以冒号开头
+  { path: '/user/:id', component: User }
+]
+*/
+
 
 const createRouter = () => new Router({
   // mode: 'history', // require service support
@@ -290,10 +320,12 @@ const createRouter = () => new Router({
 
 const router = createRouter()
 
+
 // Detail see: https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
 export function resetRouter() {
   const newRouter = createRouter()
   router.matcher = newRouter.matcher // reset router
 }
+
 
 export default router

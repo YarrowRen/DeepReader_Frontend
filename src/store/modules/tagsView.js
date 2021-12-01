@@ -153,7 +153,9 @@ const actions = {
 }
 
 export default {
-  namespaced: true,
+  namespaced: false,
+  
+  //namespaced: true,
   state,
   mutations,
   actions

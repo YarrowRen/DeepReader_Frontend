@@ -85,7 +85,7 @@
           <el-col :span="20">
             <el-card :body-style="{ padding: '0px' }" shadow="hover">
               <img
-                src="https://ywrbyimg.oss-cn-chengdu.aliyuncs.com/img/QQ%E6%88%AA%E5%9B%BE20211011181319.png"
+                src="../../assets/knowledge.png"
                 class="image"
               >
               <div style="padding: 14px">
@@ -96,13 +96,29 @@
 
                 <div class="bottom clearfix">
                   <span> 阅读周期：{{ formatDate(item.start_date) }}到{{ formatDate(item.end_date) }}<br><br></span>
-                  <span>所属课程：计算机网络<br><br></span>
+                  <span>所属课程：{{item.classify_name}}<br><br></span>
                   <span><el-tag>{{ returnStage(item.reading_stage) }}</el-tag>
-                    <el-tag type="danger">未阅读</el-tag><br><br></span>
+                    <el-tag type="success" v-if="item.have_read">已阅读</el-tag>
+                    <el-tag type="danger" v-if="!item.have_read">未阅读</el-tag>
+                    <br><br>
+                    </span>
                   <el-link
                     type="warning"
-                    href="/index#/study/index"
-                  >开始阅读</el-link>
+                    @click="$router.push('/study/index?bookId='+item.id)"
+                    v-if="!item.have_read"
+                  >开始阅读</el-link>&ensp;
+                  <el-link
+                    type="warning"
+                    @click="$router.push('/study/index?bookId='+item.id)"
+                    v-if="item.have_read"
+                    disabled
+                  >开始阅读</el-link>&ensp;
+                  <el-link type="warning"  @click="viewBookAndNum(item.id)" v-if="item.have_read"
+                    >查看文章</el-link
+                  >&ensp;
+                  <el-link type="warning" @click="$router.push('/studyQuestion/index?bookId='+item.id)" v-if="item.have_read"
+                    >创建测试题</el-link
+                  >
                 </div>
               </div>
             </el-card>
@@ -139,12 +155,13 @@ export default {
         }
       ],
       url: [
-        'https://ywrbyimg.oss-cn-chengdu.aliyuncs.com/img/QQ%E6%88%AA%E5%9B%BE20211011181319.png'
+        'https://ywrbyimg.oss-cn-chengdu.aliyuncs.com/img/QQ%E6%88%AA%E5%9B%BE20211011181319.png',
+        'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fpic.51yuansu.com%2Fpic3%2Fcover%2F02%2F45%2F36%2F59e52fc345cdb_610.jpg',
+        'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fwww.kaoersi.com%2Fuploads%2Fueditor%2F20200430%2F3cfd390b7c5bb9add0c44751c9b2a4c4.jpg'
       ],
       total: 0,
       currentPage: 1,
       pageSize: 12,
-      pages: null,
       listLoading: true,
       currentDate: new Date()
     }
@@ -156,11 +173,12 @@ export default {
     this.getAllBookList(this.currentPage, this.pageSize)
   },
   methods: {
-    ...mapActions('books', ['getBookList']),
+    ...mapActions('books', ['getUserBookList']),
+    ...mapActions('user', ['viewBook']),
     getAllBookList(page, pageSize) {
       console.log('test: ' + page + ' : ' + pageSize)
       this.listLoading = true
-      this.getBookList({ page, pageSize }).then((response) => {
+      this.getUserBookList({ page, pageSize }).then((response) => {
         // console.log(response)
         this.list = response.list
         this.total = response.total
@@ -169,8 +187,12 @@ export default {
         this.listLoading = false
       })
     },
+    viewBookAndNum(id){
+      this.viewBook(id);
+      this.$router.push('/studyLook/index?bookId='+id)
+    },
     getPhoto() {
-      var num = this.randomNum(0, 1)
+      var num = this.randomNum(this.url.length)
       return this.url[num]
     },
     handleCurrentChange(current) {
@@ -183,18 +205,8 @@ export default {
       this.pageSize = size
       this.getAllBookList(this.currentPage, this.pageSize)
     },
-    randomNum(minNum, maxNum) {
-      switch (arguments.length) {
-        case 1:
-          return parseInt(Math.random() * minNum + 1, 10)
-          break
-        case 2:
-          return parseInt(Math.random() * (maxNum - minNum + 1) + minNum, 10)
-          break
-        default:
-          return 0
-          break
-      }
+    randomNum( maxNum) {
+      Math.round(Math.random()*maxNum) 
     },
     formatDate(dateStr) {
       const date = new Date(dateStr)
@@ -206,6 +218,16 @@ export default {
       } else {
         return '课后阅读'
       }
+    },
+    returnHaveRead(have_read){
+      if(have_read){
+        return "已阅读"
+      }else{
+        return "未阅读"
+      }
+    },
+    gotoBookPage(page){
+      alert(page)
     }
   }
 }

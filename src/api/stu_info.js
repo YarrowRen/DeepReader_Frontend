@@ -16,18 +16,34 @@ export function updateStuInfo(data) {
   })
 }
 
-export function getStuBookList(token) {
+export function getQuestionFormByBookId(bookId) {
   return request({
-    url: '/stu/bookList',
+    url: '/dq/getQuestionFormByBookId',
     method: 'get',
-    params: { token }
+    params: { bookId }
   })
 }
 
-export function updateStuBookList(token,bookList) {
+export function submitAnswer(token,answerForm) {
   return request({
-    url: '/stu/updateBookList',
+    url: '/dq/submitAnswer',
     method: 'post',
-    params: { token,bookList }
+    params: { token,answerForm }
+  })
+}
+
+export function viewBook(token,bookId) {
+  return request({
+    url: '/log/viewBook',
+    method: 'get',
+    params: { token,bookId }
+  })
+}
+
+export function viewBookAtExam(token,bookId) {
+  return request({
+    url: '/log/viewBookAtExam',
+    method: 'get',
+    params: { token,bookId }
   })
 }

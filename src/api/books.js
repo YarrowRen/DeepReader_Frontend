@@ -22,3 +22,27 @@ export function getBookContent(bookId) {
     params: { bookId }
   })
 }
+
+export function getBookInfo(bookId) {
+  return request({
+    url: '/book/info',
+    method: 'get',
+    params: { bookId }
+  })
+}
+
+
+export function getClassify() {
+  return request({
+    url: '/book/classify',
+    method: 'get'
+  })
+}
+
+export function getBookByClassifyId(classifyId) {
+  return request({
+    url: '/book/getBookByClassify',
+    method: 'get',
+    params: {classifyId}
+  })
+}

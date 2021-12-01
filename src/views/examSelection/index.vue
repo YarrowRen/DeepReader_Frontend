@@ -19,18 +19,20 @@
       </div>
 
       <div>
-        <el-col v-for="(id) in this.list" :key="id" :span="6">
+        <el-col  v-for="(item, id) in this.list" :key="id" :span="6">
           <el-col :span="20">
             <el-card :body-style="{ padding: '0px' }" shadow="hover">
-              <img src="https://ywrbyimg.oss-cn-chengdu.aliyuncs.com/img/QQ%E6%88%AA%E5%9B%BE20211011181319.png" class="image">
+              <img src="../../assets/knowledge.png" class="image">
               <div style="padding: 14px;">
-                <span>《故事新编》</span>
-                <el-divider content-position="right">作者：裘沙</el-divider>
+                <span>《{{ item.name }}》</span>
+                <el-divider content-position="right">作者：{{ item.author }}</el-divider>
 
                 <div class="bottom clearfix">
-                  <span>阅读周期：Week3-Week4<br><br></span>
-                  <span>所属课程：计算机网络<br><br></span>
-                  <el-link type="warning" href="/index#/exam/index">开始练习</el-link>
+                  <span>阅读周期：{{ formatDate(item.start_date) }}到{{ formatDate(item.end_date) }}<br><br></span>
+                  <span>所属课程：{{item.classify_name}}<br><br></span>
+                  <span>所属作业：{{item.work}}<br><br></span>
+                  <el-link type="warning" v-if="!item.have_answer" @click="$router.push('/exam/index?bookId='+item.id)">开始练习</el-link>
+                  <el-link type="success" v-if="item.have_answer" @click="$router.push('/exam/index?bookId='+item.id)" disabled>已练习</el-link>
                 </div>
               </div>
             </el-card>
@@ -59,6 +61,7 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
+import * as dateUtils from '../../utils/date'
 export default {
   data() {
     return {
@@ -86,11 +89,11 @@ export default {
     this.getAllBookList(this.currentPage, this.pageSize)
   },
   methods: {
-    ...mapActions('books', ['getBookList']),
+    ...mapActions('books', ['getUserBookList']),
     getAllBookList(page, pageSize) {
       console.log('test: ' + page + ' : ' + pageSize)
       this.listLoading = true
-      this.getBookList({ page, pageSize }).then((response) => {
+      this.getUserBookList({ page, pageSize }).then((response) => {
         // console.log(response)
         this.list = response.list
         this.total = response.total
@@ -125,7 +128,11 @@ export default {
           return 0
           break
       }
-    }
+    },
+    formatDate(dateStr) {
+      const date = new Date(dateStr)
+      return dateUtils.formatDate(date, 'yyyy-MM')
+    },
   }
 }
 </script>
@@ -133,8 +140,6 @@ export default {
 <style>
 
 .el-aside {
-  background-color: #d3dce6;
-  color: #333;
   text-align: center;
   line-height: 200px;
 }
@@ -154,7 +159,6 @@ body > .el-container {
 
   .time {
     font-size: 13px;
-    color: #999;
   }
 
   .bottom {

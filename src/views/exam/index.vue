@@ -1,12 +1,12 @@
 <template>
   <div class="app-container">
-    <div v-if="user">
+    <div>
       <el-row :gutter="20">
         <el-col :span="24" :xs="24">
           <el-card>
             <el-tabs v-model="activeTab">
-              <el-tab-pane label="测试" name="account">
-                <account :user="user" />
+              <el-tab-pane label="测试" name="examForm">
+                <examForm :book="book" />
               </el-tab-pane>
             </el-tabs>
           </el-card>
@@ -18,47 +18,41 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import Timeline from './components/Timeline'
-import Account from './components/Account'
+import { mapState, mapActions } from 'vuex'
+import ExamForm from './components/ExamForm'
 
 export default {
-  name: 'Study',
-  components: { Timeline, Account },
+  name: 'Exam',
+  components: { ExamForm },
   data() {
     return {
-      user: {},
+      book: {
+        bookId: '',
+        name: '',
+        author: '',
+        pages: '',
+        brief_introduction: '',
+      },
       major: {},
-      activeTab: 'account',
-      activeTab2: 'timeline',
+      activeTab: 'examForm',
       active: 0
     }
   },
   computed: {
-    ...mapGetters([
-      'name',
-      'avatar',
-      'roles',
-      'username',
-      'sex',
-      'nation'
-    ])
+    ...mapState('books', ['title'])
   },
   created() {
-    this.getUser()
+    this.book.bookId=this.$route.query.bookId //获取图书编号
+    this.getBook(this.book.bookId)
   },
   methods: {
-    getUser() {
-      this.user = {
-        name: this.name,
-        role: this.roles.join(' | '),
-        email: 'admin@test.com',
-        avatar: this.avatar,
-        username: this.username,
-        sex: this.sex,
-        nation: this.nation
-      }
-    }
+    ...mapActions('books', ['getBookInfo']),
+    getBook(bookId){
+      this.getBookInfo(bookId).then(response => {
+        this.book = response
+        this.book.bookId=this.$route.query.bookId
+      })
+    },
   }
 }
 </script>

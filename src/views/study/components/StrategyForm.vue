@@ -4,13 +4,13 @@
 
       <el-card v-if="active == 0" class="box-card" style="text-align: center">
         <div class="text item">
-          根据左边提供的目录及文本信息，关于这篇文章，你已经知道了哪些知识，请在下方填写你的已知信息
+          在精读文章之前，关于这个主题，你能联想到曾经学过的哪些知识？
         </div>
       </el-card>
 
       <el-card v-if="active == 1" class="box-card">
         <div class="text item">
-          根据左边的文章内容，请在下方回答您之前提出的问题
+          请精读左侧文章，精读完成后，根据文章内容，在下方回答您之前提出的问题
         </div>
       </el-card>
 
@@ -28,20 +28,20 @@
         </div>
       </el-card>
 
-      <el-divider><i class="el-icon-star-off" /></el-divider>
+      <el-divider><i class="el-icon-notebook-2" /></el-divider>
 
       <div style="text-align: center">
         <el-form
           v-if="active == 0"
           ref="dynamicValidateForm"
           :model="dynamicValidateForm"
-          label-width="80px"
+          label-width="100px"
           class="demo-dynamic"
         >
           <el-form-item
             v-for="(know, index) in dynamicValidateForm.knows"
             :key="know.key"
-            :label="'已知' + index"
+            :label="'已知' + (index+1)"
             :prop="'knows.' + index + '.value'"
             :rules="{
               required: true,
@@ -60,30 +60,32 @@
             <el-button
               type="danger"
               @click.prevent="removeKnow(know)"
-            >删除</el-button>
+              icon="el-icon-delete" circle
+            ></el-button>
           </el-form-item>
 
           <el-button
             v-if="active == 0"
             size="medium"
-            type="primary"
+            type="success"
             @click="addKnow"
-          >新增已知</el-button>
+            icon="el-icon-plus" circle
+          ></el-button>
 
-          <el-divider />
+          <el-divider><i class="el-icon-notebook-2" /></el-divider>
 
           <el-card class="box-card">
             <div class="text item">
-              根据左边的文章信息以及你已知的相关内容，你还想知道哪些问题，请在下方提出你的问题
+              关于这个主题，你存在哪些疑惑？你将带着这个疑惑去精度这个文章。
             </div>
           </el-card>
           <br>
 
           <el-form-item
-            v-for="(domain, index) in dynamicValidateForm.domains"
+            v-for="(domain, index) in dynamicValidateForm.doubts"
             :key="domain.key"
-            :label="'问题' + index"
-            :prop="'domains.' + index + '.value'"
+            :label="'问题' + (index+1)"
+            :prop="'doubts.' + index + '.value'"
             :rules="{
               required: true,
               message: '提问不能为空',
@@ -96,8 +98,20 @@
             <el-button
               type="danger"
               @click.prevent="removeDomain(domain)"
-            >删除</el-button>
+              icon="el-icon-delete" circle
+            ></el-button>
           </el-form-item>
+
+          <el-button
+            v-if="active == 0"
+            size="medium"
+            type="success"
+            @click="addDomain"
+            icon="el-icon-plus" circle
+          ></el-button>
+
+          <el-divider><i class="el-icon-notebook-2" /></el-divider>
+
         </el-form>
 
         <el-form
@@ -107,10 +121,10 @@
           class="demo-dynamic"
         >
           <el-form-item
-            v-for="(domain, index) in dynamicValidateForm.domains"
+            v-for="(domain, index) in dynamicValidateForm.doubts"
             :key="domain.key"
-            :label="'问题' + index + ' : ' + domain.value"
-            :prop="'domains.' + index + '.result'"
+            :label="'问题' + (index+1) + ' : ' + domain.value"
+            :prop="'doubts.' + index + '.result'"
             :rules="{
               required: true,
               message: '提问不能为空',
@@ -127,7 +141,7 @@
           class="demo-dynamic"
         >
           <el-form-item label="问题类型">
-            <el-select v-model="questionType" placeholder="请选择">
+            <el-select v-model="questionForm.questionType" placeholder="请选择">
               <el-option
                 v-for="item in options"
                 :key="item.value"
@@ -142,14 +156,14 @@
               <i class="el-icon-question" />
             </el-tooltip>
             <el-input
-              v-model="dynamicValidateForm.summary.questionDescribe"
+              v-model="questionForm.questionDescribe"
               placeholder="请输入向其他同学提出的问题"
             />
           </el-form-item>
 
           <el-form-item label="问题答案">
             <el-input
-              v-model="dynamicValidateForm.summary.questionAnswer"
+              v-model="questionForm.questionAnswer"
               placeholder="请给出该问题的答案"
             />
           </el-form-item>
@@ -159,7 +173,7 @@
               <i class="el-icon-question" />
             </el-tooltip>
             <el-input
-              v-model="dynamicValidateForm.summary.questionClues"
+              v-model="questionForm.questionClues"
               type="textarea"
               :autosize="{ minRows: 4, maxRows: 8}"
               placeholder="请给出其他同学查找该问题答案的线索"
@@ -173,9 +187,10 @@
             <br>
             <el-image
               style="width: 100px; height: 100px"
-              :src="url"
+              :src="require('../../../assets/robot.jpg')"
               :fit="fit"
               @click="robotHelp"
+              v-loading.fullscreen.lock="fullscreenLoading"
             />
           </el-form-item>
         </el-form>
@@ -184,42 +199,49 @@
 
       <div v-if="this.active==3">
         <el-dialog title="小机器人正处于学习初级阶段，希望得到你的帮助提高问题质量" :visible.sync="dialogFormVisible">
-
-          <el-form>
-            <el-form-item label="小机器人提问" :label-width="formLabelWidth">
-              <p>“机器人提问内容”</p>
-            </el-form-item>
-            <el-form-item label="你的提问" :label-width="formLabelWidth">
-              <p>{{ this.dynamicValidateForm.summary.questionDescribe }}</p>
-            </el-form-item>
-            <el-form-item label="对比你提出的问题，你觉得小机器人提出的问题对你有帮助吗？">
-              <el-rate v-model="dynamicValidateForm.summary.robotRate" />
-            </el-form-item>
-            <el-form-item v-if="this.dynamicValidateForm.summary.robotRate<=3" label="请改进小机器人提出的问题">
-              <el-input placeholder="请输入内容" />
-            </el-form-item>
-          </el-form>
-          <div slot="footer" class="dialog-footer">
-            <el-button @click="dialogFormVisible = false">取 消</el-button>
-            <el-button type="primary" @click="dialogFormVisible = false">提交</el-button>
-          </div>
+          <el-row>
+            <el-col :span="18">
+              <el-form>
+                <el-form-item label="小机器人提问" :label-width="formLabelWidth">
+                  <p>“机器人提问内容”</p>
+                </el-form-item>
+                <el-form-item label="你的提问" :label-width="formLabelWidth">
+                  <p>{{ this.questionForm.questionDescribe }}</p>
+                </el-form-item>
+                <el-form-item label="对比你提出的问题，你觉得小机器人提出的问题对你有帮助吗？">
+                  <el-rate v-model="questionForm.robotRate" />
+                </el-form-item>
+                <el-form-item v-if="this.questionForm.robotRate<=3" label="请改进小机器人提出的问题">
+                  <el-input 
+                  v-model="questionForm.modifyQuestion"
+                  placeholder="请输入内容" />
+                </el-form-item>
+              </el-form>
+              <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogFormVisible = false">取 消</el-button>
+                <el-button type="primary" @click="dialogFormVisible = false">提交</el-button>
+              </div>
+            </el-col>
+            <el-col :span="6">
+              <el-image
+              style="width: 100px; "
+              :src="require('../../../assets/robotHelp.png')"
+              :fit="fit"></el-image>
+            </el-col>
+          </el-row>
         </el-dialog>
       </div>
 
       <div style="text-align: center">
         <el-button v-if="active == 4" size="medium" type="success" @click="createQuestion">继续创建测试题</el-button>
+        <el-button v-if="active == 4" size="medium" type="primary" @click="next">返回</el-button>
 
-        <el-button v-if="active != 3" size="medium" type="primary" @click="next">下一步</el-button>
+        <el-button v-if="active != 3 && active != 4" size="medium" type="primary" @click="next">下一步</el-button>
 
         <el-button v-if="active == 3" size="medium" type="success" @click="next">提交问题</el-button>
 
         <!--<el-button @click="back" size="medium" type="warning" v-if="active == 2">返回上一步</el-button>-->
-        <el-button
-          v-if="active == 0"
-          size="medium"
-          type="primary"
-          @click="addDomain"
-        >新增问题</el-button>
+        
         <el-button
           v-if="active == 0"
           size="medium"
@@ -240,7 +262,7 @@
             <div style="text-align:center">
               <h3 style="background-color: rgba( 203,27,69,0.2 );">在读《故事新编》之前， 我已经知道了以下知识</h3>
             </div>
-            <el-divider />
+            <el-divider><i class="el-icon-notebook-2" /></el-divider>
             <el-timeline :reverse="true">
               <el-timeline-item
                 v-for="(know, index) in this.dynamicValidateForm.knows"
@@ -256,8 +278,8 @@
             <div style="text-align:center">
               <h3 style="background-color: rgba( 67,52,27,0.2 );">我带着疑问去精读，解决了如下疑惑</h3>
             </div>
-            <el-divider />
-            <el-card v-for="(domain, index) in dynamicValidateForm.domains" :key="index" :value="domain" :title="domain.value" style="margin-bottom: 20px">
+            <el-divider><i class="el-icon-notebook-2" /></el-divider>
+            <el-card v-for="(domain, index) in dynamicValidateForm.doubts" :key="index" :value="domain" :title="domain.value" style="margin-bottom: 20px">
               <div>问题：{{ domain.value }}</div>
               <el-divider />
               <div>答案：{{ domain.result }}</div>
@@ -270,14 +292,15 @@
             <div style="text-align:center">
               <h3 style="background-color: rgba( 27,129,62,0.2 );">读完《故事新编》之后，我的学习收获如下</h3>
             </div>
-            <el-divider />
-            <el-card v-if="active == 2" class="box-card">
+            <el-divider><i class="el-icon-notebook-2" /></el-divider>
+
+            <!-- <el-card v-if="active == 2" class="box-card">
               <div class="text item">
                 请用自己的语言，概括本文章的主要内容
               </div>
-            </el-card>
+            </el-card> -->
 
-            <el-divider><i class="el-icon-star-off" /></el-divider>
+            <el-divider v-if="active!=2"><i class="el-icon-star-off"/></el-divider>
 
             <div style="text-align: center">
               <el-form
@@ -285,7 +308,7 @@
                 class="demo-dynamic"
               >
 
-                <el-form-item label="阅读概括">
+                <el-form-item label="请用自己的语言，概括本文章的主要内容">
                   <el-input
                     v-model="dynamicValidateForm.summary.content"
                     type="textarea"
@@ -348,86 +371,100 @@ export default {
   },
   data() {
     return {
-      questionType: '',
+      fit: "scale-down",
+      haveSubmit: false,
       showContent: false,
       url: 'https://ywrbyimg.oss-cn-chengdu.aliyuncs.com/img/src=http___img.zcool.cn_community_01dcd75af39d3ba8012160456172c4.jpg@1280w_1l_2o_100sh.jpg&refer=http___img.zcool.jpg',
       choiceData: [],
       active: 0,
       dialogFormVisible: false,
       questionNum: 0,
+      fullscreenLoading: false,
       dynamicValidateForm: {
+        bookId: "",
+        time: 0,
         knows: [
           {
             value: ''
           }
         ],
-        domains: [
+        doubts: [
           {
             value: '',
             result: ''
           }
         ],
         summary: {
-          robotRate: 5,
           content: '',
-          questionDescribe: '',
-          questionClues: '',
-          questionAnswer: '',
-          rate: 0,
-          damainList: [],
-          rate: null
+          rate: 0
         }
+      },
+      questionForm: {
+        bookId: '',
+        robotRate: 5,
+        modifyQuestion: '',
+        questionType: '',
+        questionDescribe: '',
+        questionClues: '',
+        questionAnswer: '',
       },
       transferProps: {
         key: 'key',
         label: 'value'
       },
       options: [{
-        value: '1',
+        value: '时间',
         label: '时间'
       }, {
-        value: '2',
+        value: '谁',
         label: '谁'
       }, {
-        value: '3',
+        value: '为什么',
         label: '为什么'
       }, {
-        value: '4',
+        value: '怎么样',
         label: '怎么样'
       }, {
-        value: '5',
+        value: '什么',
         label: '什么'
       }, {
-        value: '6',
+        value: '哪些',
         label: '哪些'
       }, {
-        value: '7',
+        value: '哪里',
         label: '哪里'
       }, {
-        value: '8',
+        value: '哪个',
         label: '哪个'
       }, {
-        value: '9',
+        value: '数字',
         label: '数字'
       }],
       timeData: '',
+      readTime: 0,
       timer: 0
+    }
+  },
+  props: {
+    book: {
+      type: Object,
+      required: true
     }
   },
   computed: {
     ...mapState('user', ['name'])
   },
   methods: {
-    ...mapActions('user', ['updateStuInfo']),
+    ...mapActions('user', ['updateStuInfo','updateUserKWLForm','updateQuestionForm']),
     next() {
       this.timeCount()
       // if (this.active++ > 2) this.active = 0;
-      // console.log(this.dynamicValidateForm.domains[0].value);
-      // console.log(this.dynamicValidateForm.domains[0].result);
+      // console.log(this.dynamicValidateForm.doubts[0].value);
+      // console.log(this.dynamicValidateForm.doubts[0].result);
       if (this.active == 0) {
         var result = true
-        for (var i = 0; i < this.dynamicValidateForm.domains.length; i++) {
-          var val = this.dynamicValidateForm.domains[i].value
+        for (var i = 0; i < this.dynamicValidateForm.doubts.length; i++) {
+          var val = this.dynamicValidateForm.doubts[i].value
           if (val == '' || val == null) {
             this.failNextAtFirstForm()
             result = false
@@ -447,9 +484,9 @@ export default {
         }
       } else if (this.active == 1) {
         var result = true
-        for (var i = 0; i < this.dynamicValidateForm.domains.length; i++) {
-          console.log(this.dynamicValidateForm.domains[i])
-          var val = this.dynamicValidateForm.domains[i].result
+        for (var i = 0; i < this.dynamicValidateForm.doubts.length; i++) {
+          console.log(this.dynamicValidateForm.doubts[i])
+          var val = this.dynamicValidateForm.doubts[i].result
           if (val == '' || val == null) {
             this.failNextAtSecondForm()
             result = false
@@ -457,6 +494,7 @@ export default {
           }
         }
         if (result) {
+          this.dynamicValidateForm.time=this.readTime
           this.active++
           this.showContent = true
           this.$emit('active', this.active)
@@ -468,11 +506,19 @@ export default {
         this.$emit('open')
         this.showContent = false
       } else if (this.active == 3) {
+        /*
+        if (questionClues == '' || questionAnswer == '') {
+          this.failSubimit()
+        }else{
+          this.submit()
+        }
+        */
         this.submit()
       } else {
         this.active = 0
         this.$emit('active', this.active)
         this.$emit('back')
+        this.$router.push('/bookSelection/index');
       }
     },
     back() {
@@ -492,10 +538,10 @@ export default {
       this.$refs[formName].resetFields()
     },
     removeDomain(item) {
-      var index = this.dynamicValidateForm.domains.indexOf(item)
-      var num = this.dynamicValidateForm.domains.length
+      var index = this.dynamicValidateForm.doubts.indexOf(item)
+      var num = this.dynamicValidateForm.doubts.length
       if (index !== -1 && num > 1) {
-        this.dynamicValidateForm.domains.splice(index, 1)
+        this.dynamicValidateForm.doubts.splice(index, 1)
       }
       if (num == 1) {
         this.failDelete()
@@ -512,12 +558,12 @@ export default {
       }
     },
     addDomain() {
-      var num = this.dynamicValidateForm.domains.length
+      var num = this.dynamicValidateForm.doubts.length
       if (num >= 5) {
         this.failAdd()
       }
       if (num < 5) {
-        this.dynamicValidateForm.domains.push({
+        this.dynamicValidateForm.doubts.push({
           value: '',
           key: Date.now()
         })
@@ -557,6 +603,11 @@ export default {
         }
       })
     },
+    failSubimit(){
+      this.$alert('问题内容，问题答案和不可以为空，请重新填写', '提交失败', {
+        confirmButtonText: '确定'
+      })
+    },
     failNextAtFirstForm() {
       this.$alert('提问或已知不可以为空，请填写您的问题或删除部分空白问题', '跳转失败', {
         confirmButtonText: '确定'
@@ -567,21 +618,39 @@ export default {
         confirmButtonText: '确定'
       })
     },
+
+    resetQuestionForm(){
+        alert("清空表单")
+        this.questionForm.robotRate=5
+        this.questionForm.modifyQuestion=""
+        this.questionForm.questionType=""
+        this.questionForm.questionDescribe=""
+        this.questionForm.questionClues=""
+        this.questionForm.questionAnswer=""
+    },
     submit() {
-      this.$confirm('问题提交成功！', '提示', {
-        confirmButtonText: '结束当前文章阅读',
-        cancelButtonText: '创建新问题',
+      this.$confirm('是否结束文章阅读并提交！', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
         this.active++
         this.$emit('active', this.active)
+        if(this.haveSubmit){
+          this.questionForm.bookId=this.book.id
+          this.updateQuestionForm(this.questionForm)
+        }else{
+          this.dynamicValidateForm.bookId=this.book.id
+          this.questionForm.bookId=this.book.id
+          this.updateUserKWLForm(this.dynamicValidateForm)
+          this.updateQuestionForm(this.questionForm)
+          this.haveSubmit=true
+        }
       }).catch(() => {
         this.$message({
           type: 'info',
-          message: '创建新问题'
+          message: '取消'
         })
-        this.questionType = ''
-        this.dynamicValidateForm.summary = []
       })
     },
     submitQuestion() {
@@ -604,7 +673,11 @@ export default {
       console.log(val)
     },
     robotHelp() {
-      this.dialogFormVisible = true
+      this.fullscreenLoading = true;
+      setTimeout(() => {
+        this.fullscreenLoading = false;
+        this.dialogFormVisible = true
+      }, 3000);
     },
     toParent: function() {
       this.$emit('greet')
@@ -625,6 +698,7 @@ export default {
           second = (second > 9 ? second : '0' + second) + ''
 
           this.timeData = minute + ':' + second
+          this.readTime=parseInt(minute)*60+parseInt(second)
         }, 1000)
       } else {
         window.clearInterval(this.timer)
@@ -633,6 +707,7 @@ export default {
     createQuestion() {
       this.active = 3
       this.$emit('requestion')
+      this.resetQuestionForm()
     }
   }
 }

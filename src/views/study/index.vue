@@ -24,17 +24,17 @@
         </el-row>
       </el-header>
       <el-main>
-        <div v-if="user">
+        <div >
           <el-row :gutter="20">
             <div>
               <el-col v-if="showContent" :span="contentSpan" :xs="24">
                 <el-card>
                   <el-tabs v-model="activeTab2">
-                    <el-tab-pane v-if="active==0" label="章节目录" name="chapter">
-                      <chapter />
+                    <el-tab-pane v-if="active==0"  name="chapter">
+                      <chapter :book="book"/>
                     </el-tab-pane>
-                    <el-tab-pane v-if="active==1" label="文章内容" name="myContent">
-                      <myContent />
+                    <el-tab-pane v-if="active==1" name="myContent">
+                      <myContent :book="book"/>
                     </el-tab-pane>
                   </el-tabs>
                 </el-card>
@@ -44,8 +44,8 @@
             <el-col :span="questionSpan" :xs="24">
               <el-card>
                 <el-tabs v-model="activeTab">
-                  <el-tab-pane label="KWL策略表格" name="strategyForm">
-                    <strategyForm :user="user" @close="closeContent()" @next="nextPage()" @open="openContent()" @back="backPage()" @active="changePercent()" @requestion="reQuestion()" />
+                  <el-tab-pane  name="strategyForm">
+                    <strategyForm :user="user" :book="book" @close="closeContent()" @next="nextPage()" @open="openContent()" @back="backPage()" @active="changePercent()" @requestion="reQuestion()" />
                   </el-tab-pane>
                 </el-tabs>
               </el-card>
@@ -59,7 +59,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import MyContent from './components/MyContent'
 import StrategyForm from './components/StrategyForm'
 import Chapter from './components/Chapter'
@@ -69,41 +69,37 @@ export default {
   components: { MyContent, StrategyForm, Chapter },
   data() {
     return {
+      book: {
+        bookId: '',
+        name: '',
+        author: '',
+        pages: '',
+        brief_introduction: '',
+      },
       contentSpan: 14,
       questionSpan: 10,
       showContent: true,
       active: 0,
       percent: 0,
-      user: {},
       major: {},
       activeTab: 'strategyForm',
       activeTab2: 'chapter'
     }
   },
   computed: {
-    ...mapGetters([
-      'name',
-      'avatar',
-      'roles',
-      'username',
-      'sex',
-      'nation'
-    ])
+    ...mapState('books', ['title'])
   },
   created() {
-    this.getUser()
+    this.book.bookId=this.$route.query.bookId //获取图书编号
+    this.getBook(this.book.bookId)
   },
   methods: {
-    getUser() {
-      this.user = {
-        name: this.name,
-        role: this.roles.join(' | '),
-        email: 'admin@test.com',
-        avatar: this.avatar,
-        username: this.username,
-        sex: this.sex,
-        nation: this.nation
-      }
+    ...mapActions('books', ['getBookInfo']),
+    getBook(bookId){
+      this.getBookInfo(bookId).then(response => {
+        this.book = response
+        this.book.bookId=this.$route.query.bookId
+      })
     },
     changeCard() {
       if (this.activeTab2 == 'chapter') {

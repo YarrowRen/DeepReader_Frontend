@@ -2,14 +2,27 @@
   <div class="app-container">
     <el-container>
       <el-main>
-        <div v-if="user">
+        <div>
           <el-row :gutter="20">
-
+            <div>
+              <el-col  :span="contentSpan" :xs="24">
+                <el-card>
+                  <el-tabs v-model="activeTab2">
+                    <el-tab-pane label="章节目录" name="chapter">
+                          <chapter :book="book"/>
+                    </el-tab-pane>
+                    <el-tab-pane label="文章内容" name="myContent">
+                          <myContent :book="book"/>
+                    </el-tab-pane>
+                  </el-tabs>
+                </el-card>
+              </el-col>
+            </div>
             <el-col :span="questionSpan" :xs="24">
               <el-card>
                 <el-tabs v-model="activeTab">
-                  <el-tab-pane label="KWL策略表格" name="account">
-                    <account :user="user" @close="closeContent()" @next="nextPage()" @open="openContent()" @back="backPage()" @active="changePercent()" />
+                  <el-tab-pane label="KWL策略表格" name="strategyForm">
+                    <strategyForm :user="user" :book="book" @close="closeContent()" @next="nextPage()" @open="openContent()" @back="backPage()" @active="changePercent()" />
                   </el-tab-pane>
                 </el-tabs>
               </el-card>
@@ -23,76 +36,62 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import UserCard from './components/UserCard'
-import Timeline from './components/Timeline'
-import Account from './components/Account'
-import testForProfile from './components/testForProfile'
+import { mapState, mapActions } from 'vuex'
+import StrategyForm from './components/StrategyForm'
+import MyContent from './components/MyContent'
 import Chapter from './components/Chapter'
 
 export default {
   name: 'Study',
-  components: { UserCard, Timeline, Account, testForProfile, Chapter },
+  components: {  MyContent,StrategyForm, Chapter },
   data() {
     return {
-      contentSpan: 0,
-      questionSpan: 24,
-      showContent: true,
+      book: {
+        bookId: '',
+        name: '',
+        author: '',
+        pages: '',
+        brief_introduction: '',
+      },
+      contentSpan: 14,
+      questionSpan: 10,
       active: 0,
       percent: 0,
       user: {},
       major: {},
-      activeTab: 'account',
+      activeTab: 'strategyForm',
       activeTab2: 'chapter'
     }
   },
   computed: {
-    ...mapGetters([
-      'name',
-      'avatar',
-      'roles',
-      'username',
-      'sex',
-      'nation'
-    ])
+    ...mapState('books', ['title'])
   },
   created() {
-    this.getUser()
+    this.book.bookId=this.$route.query.bookId //获取图书编号
+    this.getBook(this.book.bookId)
   },
   methods: {
-    getUser() {
-      this.user = {
-        name: this.name,
-        role: this.roles.join(' | '),
-        email: 'admin@test.com',
-        avatar: this.avatar,
-        username: this.username,
-        sex: this.sex,
-        nation: this.nation
-      }
+    ...mapActions('books', ['getBookInfo']),
+    getBook(bookId){
+      this.getBookInfo(bookId).then(response => {
+        this.book = response
+        this.book.bookId=this.$route.query.bookId
+      })
     },
     changeCard() {
       if (this.activeTab2 == 'chapter') {
-        this.activeTab2 = 'timeline'
+        this.activeTab2 = 'myContent'
       } else {
         this.activeTab2 = 'chapter'
       }
     },
     nextPage() {
-      this.activeTab2 = 'timeline'
+      this.activeTab2 = 'myContent'
       this.active = 1
     },
     backPage() {
       this.activeTab2 = 'chapter'
       this.active = 0
-    },
-    closeContent() {
-      this.showContent = false
-      this.questionSpan = 24
-    },
-    openContent() {
-      this.showContent = true
-      this.questionSpan = 10
     },
     changePercent() {
       if (this.percent >= 4) {

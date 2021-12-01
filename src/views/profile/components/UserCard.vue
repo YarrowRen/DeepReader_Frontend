@@ -37,18 +37,6 @@
           <div> {{ user.nation }} 族</div>
         </div>
       </div>
-      <div class="user-education user-bio-section">
-        <div class="user-bio-section-header"><svg-icon icon-class="tree" /><span>所属学院</span></div>
-        <div class="user-bio-section-body">
-          <div> {{ college }} </div>
-        </div>
-      </div>
-      <div class="user-education user-bio-section">
-        <div class="user-bio-section-header"><svg-icon icon-class="star" /><span>专业班级</span></div>
-        <div class="user-bio-section-body">
-          <div> {{ majorName }} {{ clsNo }} 班</div>
-        </div>
-      </div>
     </div>
   </el-card>
 </template>
@@ -77,13 +65,8 @@ export default {
     }
   },
   computed: {
-    ...mapState('major', ['title', 'majorName', 'college', 'clsNo'])
-  },
-  created() {
-    this.getStuClsInfo()
   },
   methods: {
-    ...mapActions('major', ['getStuClsInfo'])
   }
 }
 </script>

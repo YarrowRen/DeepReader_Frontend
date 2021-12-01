@@ -1,7 +1,8 @@
 import { login, logout, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
-import { updateStuInfo } from '@/api/stu_info'
+import { updateStuInfo,getQuestionFormByBookId,submitAnswer,viewBook,viewBookAtExam } from '@/api/stu_info'
+import {updateUserKWLForm,updateQuestionForm,userDataCount} from '@/api/user'
 
 const state = {
   token: getToken(),
@@ -149,7 +150,100 @@ const actions = {
         reject(error)
       })
     })
-  }
+  },
+
+  updateUserKWLForm({ commit, state }, KWLForm){
+    return new Promise((resolve, reject) => {
+      updateUserKWLForm(state.token ,KWLForm).then(response => {
+          //alert("success: KWL表格提交成功!")
+          //location.reload();
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+
+  updateQuestionForm({ commit, state }, questionForm){
+    return new Promise((resolve, reject) => {
+      updateQuestionForm(state.token ,questionForm).then(response => {
+          //location.reload();
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+
+  submitAnswer({ commit, state }, answerForm){
+    return new Promise((resolve, reject) => {
+      submitAnswer(state.token ,answerForm).then(response => {
+          //location.reload();
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+
+
+  getQuestionFormByBookId({},bookId){
+    return new Promise(( resolve,reject) => {
+      getQuestionFormByBookId(bookId).then((response) => {
+        console.log("test:"+bookId)
+        const { data } = response
+        if (!data) {
+          reject('请求数据失败.')
+        }
+        resolve(data)
+          //location.reload();
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+
+  viewBook({ commit, state }, bookId) {
+    return new Promise((resolve, reject) => {
+      viewBook( state.token,bookId ).then(response => {
+        const { data } = response
+        if (!data) {
+          reject('请求数据失败.')
+        }
+        
+        resolve(data)
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+
+  viewBookAtExam({ commit, state }, bookId) {
+    return new Promise((resolve, reject) => {
+      viewBookAtExam( state.token,bookId ).then(response => {
+        const { data } = response
+        if (!data) {
+          reject('请求数据失败.')
+        }
+        
+        resolve(data)
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+
+  userDataCount({ state }) {
+    return new Promise((resolve, reject) => {
+      userDataCount(state.token).then((response) => {
+        const { data } = response
+        if (!data) {
+          reject('请求数据失败.')
+        }
+        resolve(data)
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+
 }
 
 export default {

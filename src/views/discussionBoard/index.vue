@@ -10,49 +10,81 @@
         <el-card>
           <h3>全部讨论</h3>
           <el-divider />
-          <el-col :span="24">
-            <div>
-              <el-tag>第一次作业</el-tag> <el-link type="primary" :underline="false" href="/#/discussion/index">《故事新编》等三篇文章的中心思想有何不同，试给出答案</el-link>
-            </div>
-            <br>
-            <el-row>
-              <el-col :span="16">
-                <el-link type="success">袁华老师</el-link>
-                <el-divider direction="vertical" />
-                2020/02/16 发表
-                <el-divider direction="vertical" />
-                <el-link type="success">张三</el-link>
-                最后回复（2020-6-30）
-              </el-col>
-              <el-col :span="8">
-                浏览：2008
-                <el-divider direction="vertical" />
-                回复：54
-              </el-col>
-            </el-row>
+          <div  >
+            <el-col  v-for="(item, id) in this.showForm" :key="id" :span="24">
+              <div>
+                <el-tag>{{item.classifyName}}</el-tag> <el-link type="primary" :underline="false" :href="'/#/discussion/index/'+item.id">{{item.topic}}</el-link>
+              </div>
+              <br>
+              <el-row>
+                <el-col :span="16">
+                  <el-link type="success">{{item.userName}}老师</el-link>
+                  <el-divider direction="vertical" />
+                  {{formatDate(item.createTime)}} 发表
+                </el-col>
+                <el-col :span="8">
+                  浏览：
+                  <!-- id 将作为查询条件 -->
+                  <span :id="'/discussion/index/'+item.id" class="leancloud_visitors" data-flag-title="Your Article Title" >
+                      <span class="leancloud-visitors-count">1000000</span>
+                  </span>
+                  <el-divider direction="vertical" />
+                  回复：<span class="valine-comment-count" :data-xid="'/discussion/index/'+item.id"></span>
+                </el-col>
+              </el-row>
 
-            <el-divider />
-          </el-col>
-
+              <el-divider />
+            </el-col>
+          </div>
         </el-card>
 
         <br>
 
+        <div style="text-align: center"  v-permission="['admin']">
+          <el-button type="success" round @click="dialogFormVisible = true">发布讨论</el-button>
+        </div>
+
+        <div style="text-align: center">
+          <el-pagination
+            background
+            layout="sizes, prev, pager, next"
+            :page-sizes="[10]"
+            :page-size="this.pageSize"
+            :total="this.total"
+            :current-page="this.currentPage"
+            @current-change="handleCurrentChange"
+          />
+        </div>
+
+       
+
         <div>
           <el-dialog :visible.sync="dialogFormVisible">
-            <el-form style="height: 500px; overflow: auto">
-              <el-form-item label="原文内容" :label-width="formLabelWidth">
-                <div>
-                  <h3 style="text-align: center">《故事新编》</h3>
-                  <el-divider
-                    content-position="right"
-                  >作者：裘沙 王伟君</el-divider>
-                  <el-image :src="url" style="height: 150px" />
-                  <p>{{ content }}</p>
-                </div>
+            <div>
+              <h3 style="text-align: center">发布讨论</h3>
+              <el-divider></el-divider>
+            </div>
+            <el-form style="height: 300px; overflow: auto" :model="discussionForm" ref="discussionForm" label-width="80px">
+              <el-form-item label="讨论主题">
+                <el-input v-model="discussionForm.topic"></el-input>
+              </el-form-item>
+              <el-form-item label="讨论内容">
+                <el-input type="textarea" v-model="discussionForm.content"></el-input>
+              </el-form-item>
+              <el-form-item label="关联作业">
+                <el-cascader
+                    v-model="discussionForm.classifyId"
+                    :options="discussionForm.classifyList"
+                    @change="handleChange">
+                  </el-cascader>
               </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
+              
+              <el-button
+                type="success"
+                @click="submitDiscussionForm"
+              >提交</el-button>
               <el-button
                 type="primary"
                 @click="dialogFormVisible = false"
@@ -60,6 +92,9 @@
             </div>
           </el-dialog>
         </div>
+
+        
+
       </el-col>
     </el-row>
   </div>
@@ -67,270 +102,136 @@
 
 <script>
 
+// 当然你也可以为了方便使用，将它注册到全局
+import permission from '@/directive/permission/index.js' // 权限判断指令
 import { mapState, mapActions } from 'vuex'
-import E from 'wangeditor'
-
+import Valine from 'valine'
+import * as dateUtils from '../../utils/date'
 export default {
-
-  props: ['setEditorValue', 'remark', 'path'],
+  directives: { permission },
   data() {
     return {
+      pageSize: 10,
+
+      total: 0,
+      currentPage: 1,
+      pages: null,
+      listLoading: true,
+
+      urlPath: '/discussion/index/故事新编',
       dialogFormVisible: false,
-      list: [
-        { id: 1, name: 'zs1' },
-        { id: 2, name: 'zs2' },
-        { id: 3, name: 'zs3' },
-        { id: 4, name: 'zs4' },
-        { id: 5, name: 'zs5' },
-        { id: 6, name: 'zs6' }
-      ],
-      num1: 0,
-      uptype: false,
-      url: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
-      content: '',
-      editor: null
-    }
-  },
-  watch: {
-    remark(val) {
-      if (this.editor != '') {
-        this.editor.txt.html(val)
-      }
-    }
-  },
-  computed: {
-    ...mapState('user', ['name']),
-    ...mapState('books', ['title'])
-  },
-  created() {
-    this.getContent()
-  },
-  methods: {
-    ...mapActions('books', ['getBookContent']),
-    getContent() {
-      this.getBookContent('1000517').then((response) => {
-        this.content = response
-      })
-    },
-    openDialog() {
-      this.dialogFormVisible = true
-    },
-    openForm() {
-      this.dialogFormVisible = true
-    },
-    upStar() {
-      if (this.uptype) {
-        this.uptype = false
-        this.num1 = 0
-      } else {
-        this.uptype = true
-        this.num1 = 1
-      }
+      discussionForm: {
+        topic: "",
+        content: "",
+        bookList: [],
+        classifyId: 0,
+        classifyList: [{
+          label: '',
+          children:[{
+            value: 0,
+            label: '',
+          }]
+        }]
+      },
+      showForm: [{
+        id: 0,
+        userId: 0,
+        classifyId: 0,
+        createTime: '',
+        topic: '',
+        content: '',
+        userName: '',
+        classifyName: ''
+      }]
     }
   },
   mounted() {
-    this.editor = new E(this.$refs.editorElem)
-    this.editor.customConfig = {
-
-      menus: [
-
-        'head', 'bold', 'fontSize', 'fontName', 'italic', 'underline', 'strikeThrough',
-
-        'foreColor', 'backColor', 'link', 'list', 'justify', 'quote',
-
-        'emoticon', 'image', 'table', 'undo', 'redo'
-
-      ],
-
-      fontNames: [
-
-        '宋体', '微软雅黑', 'Arial', 'Tahoma', 'Verdana'
-
-      ],
-
-      colors: [
-
-        '#000000', '#eeece0', '#1c487f', '#4d80bf', '#c24f4a', '#8baa4a', '#7b5ba1', '#46acc8', '#f9963b', '#ffffff'
-
-      ],
-
-      // 编辑区域的 z-index
-
-      zIndex: 10000,
-
-      // 是否开启 debug 模式（debug 模式下错误会 throw error 形式抛出）
-
-      debug: false,
-
-      // 插入链接时候的格式校验
-
-      linkCheck: function(text, link) {
-        // text 是插入的文字
-
-        // link 是插入的链接
-
-        return true
-      },
-
-      // 插入网络图片的校验
-
-      linkImgCheck: function(src) {
-        // src 即图片的地址
-
-        return true
-      },
-
-      // 粘贴过滤样式，默认开启
-
-      pasteFilterStyle: true,
-
-      // 粘贴内容时，忽略图片。默认关闭
-
-      pasteIgnoreImg: false,
-
-      // 对粘贴的文字进行自定义处理，返回处理后的结果。编辑器会将处理后的结果粘贴到编辑区域中。
-
-      // IE 暂时不支持
-
-      pasteTextHandle: function(content) {
-        // content 即粘贴过来的内容（html 或 纯文本），可进行自定义处理然后返回
-
-        return content
-      },
-
-      // onchange 事件
-
-      onchange: (html) => {
-        this.$emit('setEditorValue', html)
-      },
-
-      // 是否显示添加网络图片的 tab
-
-      showLinkImg: true,
-
-      // 插入网络图片的回调
-
-      linkImgCallback: function(url) {
-
-        // console.log(url)  // url 即插入图片的地址
-
-      },
-
-      // 默认上传图片 max size: 5M
-
-      uploadImgMaxSize: 5 * 1024 * 1024,
-
-      // 配置一次最多上传几个图片
-
-      // uploadImgMaxLength: 5,
-
-      // 上传图片，是否显示 base64 格式
-
-      uploadImgShowBase64: false,
-
-      // 上传图片，server 地址（如果有值，则 base64 格式的配置则失效）
-
-      uploadImgServer: this.path || false,
-
-      // 自定义配置 filename
-
-      uploadFileName: '',
-
-      // 上传图片的自定义参数
-
-      uploadImgParams: {
-
-        // token: 'abcdef12345'
-
-      },
-
-      // 上传图片的自定义header
-
-      uploadImgHeaders: {
-
-        // 'Accept': 'text/x-json'
-
-      },
-
-      // 配置 XHR withCredentials
-
-      withCredentials: false,
-
-      // 自定义上传图片超时时间 ms
-
-      uploadImgTimeout: 10000,
-
-      // 上传图片 hook
-
-      uploadImgHooks: {
-
-        // customInsert: function (insertLinkImg, result, editor) {
-
-        //    console.log('customInsert')
-
-        //    // 图片上传并返回结果，自定义插入图片的事件，而不是编辑器自动插入图片
-
-        //    const data = result.data1 || []
-
-        //    data.forEach(link => {
-
-        //        insertLinkImg(link)
-
-        //    })
-
-        // },
-
-        before: function(xhr, editor, files) {
-
-          // 图片上传之前触发
-
-          // 如果返回的结果是 {prevent: true, msg: 'xxxx'} 则表示用户放弃上传
-
-          // return {
-
-          //    prevent: true,
-
-          //    msg: '放弃上传'
-
-          // }
-
-        },
-
-        success: function(xhr, editor, result) {
-
-          // 图片上传并返回结果，图片插入成功之后触发
-
-        },
-
-        fail: function(xhr, editor, result) {
-
-          // 图片上传并返回结果，但图片插入错误时触发
-
-        },
-
-        error: function(xhr, editor) {
-
-          // 图片上传出错时触发
-
-        },
-
-        timeout: function(xhr, editor) {
-
-          // 图片上传超时时触发
-
+    let vm = this
+    vm.$nextTick(()=>{
+      vm.valine = new Valine({
+        el: '#vcomments',
+        appId: '2WRnQqrX90LVgjRRjeRYykGS-gzGzoHsz',
+        appKey: 'CT68IxmlTDVY6SRzU22yyDrB',
+        path: vm.$route.path,
+        avatar:'mp',
+        visitor: true // 阅读量统计
+      })
+      //console.log(vm.valine.content)
+    })
+  },
+  created() {
+    this.getClassifyList()
+    this.getShowForm(this.currentPage,this.pageSize)
+  },
+  methods: {
+    ...mapActions('books', ['getClassify']),
+    ...mapActions('discussion', ['getDiscussionList','submitDiscussion']),
+    getClassifyList(){
+      this.getClassify().then(response => {
+        //console.log(response)
+        this.discussionForm.classifyList = response
+      })
+    },
+    formatDate(dateStr) {
+      const date = new Date(dateStr)
+      return dateUtils.formatDate(date, 'yyyy/MM/dd')
+    },
+    getShowForm(page,pageSize){
+      this.getDiscussionList(page,pageSize).then(response => {
+        this.showForm = response.list
+        this.total = response.total
+        this.currentPage = response.pageNum
+        this.pageSize = response.pageSize
+        this.listLoading = false
+        console.log(this.showForm)
+      })
+    },
+    handleCurrentChange(current) {
+      this.showForm = []
+      this.currentPage = current
+      this.getShowForm(this.currentPage, this.pageSize)
+    },
+    handleSizeChange(size) {
+      this.showForm = []
+      this.pageSize = size
+      this.getShowForm(this.currentPage, this.pageSize)
+    },
+    handleChange(value) {
+      this.discussionForm.classifyId=value[1]
+      //console.log(this.discussionForm.classifyId);
+    },
+    submitDiscussionForm(){
+      this.$confirm('是否提交该讨论？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        if(this.discussionForm.topic==null || this.discussionForm.topic==''){
+          this.$message({
+            type: 'warning',
+            message: '主题不可以为空，请重新填写'
+          })
+        }else if(this.discussionForm.content==null || this.discussionForm.content==''){
+          this.$message({
+            type: 'warning',
+            message: '内容不可以为空，请重新填写'
+          })
+        }else if(this.discussionForm.classifyId==0){
+          this.$message({
+            type: 'warning',
+            message: '请选择所属作业！'
+          })
+        }else{
+          this.submitDiscussion(this.discussionForm)
         }
-
-      }
-
-    }
-
-    this.editor.create()
-
-    if (this.remark) {
-      this.editor.txt.html(`<p>${this.remark}</p>`)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消'
+        })
+      })
     }
   }
-
 }
 
 </script>

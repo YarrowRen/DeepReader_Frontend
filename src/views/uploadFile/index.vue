@@ -5,8 +5,11 @@
         <el-col :span="24" :xs="24">
           <el-card>
             <el-tabs v-model="activeTab">
-              <el-tab-pane label="测试" name="account">
-                <account :user="user" />
+              <el-tab-pane label="上传文章" name="uploadFile">
+                <uploadFile :user="user" />
+              </el-tab-pane>
+              <el-tab-pane label="上传作业" name="uploadWork">
+                <uploadWork :user="user" />
               </el-tab-pane>
             </el-tabs>
           </el-card>
@@ -19,16 +22,17 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import Account from './components/Account'
+import uploadFile from './components/uploadFile'
+import uploadWork from './components/uploadWork'
 
 export default {
   name: 'Study',
-  components: { Account },
+  components: { uploadFile,uploadWork },
   data() {
     return {
       user: {},
       major: {},
-      activeTab: 'account',
+      activeTab: 'uploadFile',
       active: 0
     }
   },
