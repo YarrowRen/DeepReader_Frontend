@@ -7,17 +7,17 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            阅读文章数 <count-to :start-val="0" :end-val="this.dataCount.readCount" :duration="2600" class="card-panel-num" />
+            你已阅读文章 <count-to :start-val="0" :end-val="this.dataCount.readCount" :duration="2600" class="card-panel-num" />本
           </div>
           
           
           <div class="card-panel-text">
-            剩余文章数 <count-to :start-val="0" :end-val="this.dataCount.unReadCount" :duration="3600" class="card-panel-num" />
+            你未阅读文章 <count-to :start-val="0" :end-val="this.dataCount.unReadCount" :duration="3600" class="card-panel-num" />本
           </div>
 
           
           <div class="card-panel-text">
-            阅读时速度 <count-to :start-val="0" :end-val="this.dataCount.avgReadTime" :duration="3600" class="card-panel-num" />(秒)
+            你的阅读速度 <count-to :start-val="0" :end-val="this.dataCount.avgReadTime" :duration="3600" class="card-panel-num" />(字/秒)
           </div>
           
 
@@ -31,14 +31,14 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            提问问题数量： <count-to :start-val="0" :end-val="this.dataCount.questionCount" :duration="3000" class="card-panel-num" />
+            你提出了<count-to :start-val="0" :end-val="this.dataCount.questionCount" :duration="3000" class="card-panel-num" />个问题
           </div>
           <div class="card-panel-text">
-            提问问题得分： {{this.dataCount.avgQuestionRate}}
+            同学们对你的问题打分为<count-to :start-val="0" :end-val="this.dataCount.avgQuestionRate" :duration="3000" class="card-panel-num" />分
           </div>
           
           <div class="card-panel-text">
-            问题回答人数： <count-to :start-val="0" :end-val="this.dataCount.beAnsweredCount" :duration="3000" class="card-panel-num" />
+            你的问题被<count-to :start-val="0" :end-val="this.dataCount.beAnsweredCount" :duration="3000" class="card-panel-num" />人回答
           </div>
           
         </div>
@@ -51,10 +51,10 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            评价问题数 <count-to :start-val="0" :end-val="this.dataCount.opinionCount" :duration="3200" class="card-panel-num" />
+            你回答了<count-to :start-val="0" :end-val="this.dataCount.answerCount" :duration="3600" class="card-panel-num" />个问题
           </div>
           <div class="card-panel-text">
-            回答问题数 <count-to :start-val="0" :end-val="this.dataCount.answerCount" :duration="3600" class="card-panel-num" />
+            你评价了<count-to :start-val="0" :end-val="this.dataCount.opinionCount" :duration="3200" class="card-panel-num" />个问题
           </div>
           
         </div>

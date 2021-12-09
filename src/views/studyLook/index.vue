@@ -18,7 +18,7 @@
                           <chapter :book="book"/>
                         </el-tab-pane>
                         <el-tab-pane label="文章内容" name="myContent">
-                          <myContent :book="book"/>
+                          <myContent :book="book" v-if=" book.url!== '' "/>
                         </el-tab-pane>
                       </el-tabs>
                     </el-card>
@@ -50,6 +50,7 @@ export default {
         author: '',
         pages: '',
         brief_introduction: '',
+        url: ''
       },
       contentSpan: 24,
       questionSpan: 0,
@@ -57,7 +58,7 @@ export default {
       active: 0,
       percent: 0,
       major: {},
-      activeTab2: 'chapter'
+      activeTab2: 'myContent'
     }
   },
   computed: {

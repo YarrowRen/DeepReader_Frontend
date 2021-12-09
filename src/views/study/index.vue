@@ -34,7 +34,7 @@
                       <chapter :book="book"/>
                     </el-tab-pane>
                     <el-tab-pane v-if="active==1" name="myContent">
-                      <myContent :book="book"/>
+                      <myContent :book="book" v-if="book.url!==''"/>
                     </el-tab-pane>
                   </el-tabs>
                 </el-card>
@@ -75,6 +75,7 @@ export default {
         author: '',
         pages: '',
         brief_introduction: '',
+        url: ''
       },
       contentSpan: 14,
       questionSpan: 10,

@@ -13,13 +13,17 @@
                 <el-upload
                   class="upload-demo"
                   drag
-                  action="https://jsonplaceholder.typicode.com/posts/"
+                  :on-preview="handlePreview"
+                  :on-remove="handleRemove"
+                  :action="this.actionUrl"
+                  :on-success="handleSuccess"
                   :limit="1"
+                  :data="this.bookForm"
                   accept=".pdf"
                 >
                   <i class="el-icon-upload" />
                   <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-                  <div slot="tip" class="el-upload__tip">只能上传pdf文件，且不超过10mb</div>
+                  <div slot="tip" class="el-upload__tip">只能上传一份pdf文件，且不超过10mb</div>
                 </el-upload>
 
               </div>
@@ -62,16 +66,17 @@
 
               <el-form-item label="所属课程及作业">
                 <el-cascader
-                placeholder="请选择课程及作业"
-                v-model="bookForm.class"
-                :options="options"
-                @change="handleChange"></el-cascader>
+                  placeholder="请选择课程及作业"
+                  v-model="bookForm.classifyId"
+                  :options="bookForm.classifyList"
+                  @change="handleChange">
+                </el-cascader>
               </el-form-item>
 
               <el-form-item label="阅读阶段">
                 <el-select v-model="bookForm.stage" placeholder="请选择阅读阶段">
-                  <el-option label="课前阅读" value="shanghai" />
-                  <el-option label="课后阅读" value="beijing" />
+                  <el-option label="课前阅读" value="0" />
+                  <el-option label="课后阅读" value="1" />
                 </el-select>
               </el-form-item>
 
@@ -83,7 +88,7 @@
 
       <el-divider v-if="this.active!=3" />
       <div v-if="this.active!=3" style="text-align: center">
-        <el-button size="medium" type="success" @click="end">上传文章</el-button>
+        <el-button size="medium" type="success" @click="submitForm">上传文章</el-button>
 
         <el-button
           size="medium"
@@ -120,13 +125,22 @@ export default {
   },
   data() {
     return {
+      actionUrl: process.env.VUE_APP_BASE_API + '/file/upload',
       bookForm: {
         bookName: '',
         author: '',
         content: '',
         studyDate: '',
-        class: '',
-        stage: ''
+        stage: '',
+        classifyId: 0,
+        classifyList: [{
+          label: '',
+          children:[{
+            value: 0,
+            label: '',
+          }]
+        }],
+        url: ''
       },
       content: '',
       url: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
@@ -164,53 +178,21 @@ export default {
         { color: '#1989fa', percentage: 80 },
         { color: '#6f7ad3', percentage: 100 }
       ],
-      options: [{
-        value: 0,
-        label: "计算机网络",
-        children: [{
-          value: "first",
-          label: "第一次作业"
-        },{
-          value: "second",
-          label: "第二次作业"
-        },{
-          value: "third",
-          label: "第三次作业"
-        }]
-      },{
-        value: 1,
-        label: "操作系统",
-        children: [{
-          value: "first",
-          label: "第一次作业"
-        },{
-          value: "second",
-          label: "第二次作业"
-        },{
-          value: "third",
-          label: "第三次作业"
-        }]
-      },{
-        value: 2, 
-        label: "数字电路",
-        children: [{
-          value: "first",
-          label: "第一次作业"
-        },{
-          value: "second",
-          label: "第二次作业"
-        },{
-          value: "third",
-          label: "第三次作业"
-        }]
-      }]
     }
   },
   computed: {
   },
   created() {
+    this.getClassifyList()
   },
   methods: {
+    ...mapActions('books', ['getClassify']),
+    getClassifyList(){
+      this.getClassify().then(response => {
+        //console.log(response)
+        this.bookForm.classifyList = response
+      })
+    },
     next() {
       if (this.active == 0) {
         this.dynamicValidateForm.domains[0].value = '请写出故事新编中描写的几处核心情节',
@@ -228,15 +210,44 @@ export default {
         this.percentageNum = 10
       }
     },
-    submitForm(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          alert('submit!')
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
+    handlePreview(file){
+      window.open(file.response.data)
+    },
+    handleSuccess(file){
+      this.bookForm.url=file.data
+      console.log(this.bookForm.url)
+    },
+    handleRemove(){
+      this.bookForm.url=''
+    },
+    submitForm() {
+      if(this.bookForm.bookName==null || this.bookForm.bookName=='' ){
+        this.$alert('文章题目不可为空', '上传失败', {
+          confirmButtonText: '确定'
+        })
+      }else if(this.bookForm.author==null || this.bookForm.author==''){
+        this.$alert('文章作者不可为空', '上传失败', {
+          confirmButtonText: '确定'
+        })
+      }else if(this.bookForm.studyDate==null || this.bookForm.studyDate==''){
+        this.$alert('请确定文章阅读时间', '上传失败', {
+          confirmButtonText: '确定'
+        })
+      }else if(this.bookForm.stage==null || this.bookForm.stage==''){
+        this.$alert('请确定文章阅读阶段', '上传失败', {
+          confirmButtonText: '确定'
+        })
+      }else if(this.bookForm.classifyId==null || this.bookForm.classifyId==0){
+        this.$alert('请选择文章所属作业', '上传失败', {
+          confirmButtonText: '确定'
+        })
+      }else if(this.bookForm.url==null || this.bookForm.url==''){
+        this.$alert('请上传作业PDF文件', '上传失败', {
+          confirmButtonText: '确定'
+        })
+      }else{
+        this.active = 3
+      }
     },
     resetForm(formName) {
       this.$refs[formName].resetFields()
@@ -267,6 +278,8 @@ export default {
     },
     handleChange(val) {
       console.log(val)
+      
+      this.bookForm.classifyId=val[1]
     },
     openDialog() {
       this.dialogFormVisible = true

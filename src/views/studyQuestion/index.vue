@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-container>
       <el-main>
-        <div>
+        <div style="text-align: center">
           <el-row :gutter="20">
             <div>
               <el-col  :span="contentSpan" :xs="24">
@@ -12,7 +12,7 @@
                           <chapter :book="book"/>
                     </el-tab-pane>
                     <el-tab-pane label="文章内容" name="myContent">
-                          <myContent :book="book"/>
+                          <myContent :book="book" v-if="book.url!==''"/>
                     </el-tab-pane>
                   </el-tabs>
                 </el-card>
@@ -52,6 +52,7 @@ export default {
         author: '',
         pages: '',
         brief_introduction: '',
+        url: ''
       },
       contentSpan: 14,
       questionSpan: 10,

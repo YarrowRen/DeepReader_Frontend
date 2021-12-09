@@ -407,8 +407,7 @@ export default {
 
     getPdfUrl() {
       // todo 请求后台，获取pdf的url，这里用的是线上的地址
-      this.pdfSrc =
-        "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf";
+      this.pdfSrc =this.book.url
       this.loadFile(this.pdfSrc);
     },
     loadFile(url) {

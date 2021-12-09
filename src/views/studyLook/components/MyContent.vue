@@ -1,6 +1,6 @@
 <template>
   <div class="block" style="height: 650px; overflow: auto">
-    <div>
+    <div style="text-align: center">
       <h3 style="text-align: center">《{{ book.name }}》</h3>
       <el-divider content-position="right">作者：{{ book.author }}</el-divider>
 
@@ -42,13 +42,15 @@ export default {
       url: "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg",
       pdfPages: [], // 页数
       pdfWidth: "", // 宽度
-      pdfSrc: "", // 地址
+      pdfSrc: "",
       pdfDoc: "", // 文档内容
       pdfScale: 1.4, // 放大倍数
     };
   },
   mounted() {
     this.getPdfUrl();
+  },
+  created(){
   },
   props: {
     book: {
@@ -59,8 +61,7 @@ export default {
   methods: {
     getPdfUrl() {
       // todo 请求后台，获取pdf的url，这里用的是线上的地址
-      this.pdfSrc =
-        "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf";
+      this.pdfSrc =this.book.url
       this.loadFile(this.pdfSrc);
     },
     loadFile(url) {
