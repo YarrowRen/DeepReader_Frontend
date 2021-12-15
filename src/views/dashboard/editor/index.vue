@@ -7,10 +7,16 @@
       <line-chart :chart-data="lineChartData" />
     </el-row>
 
+    <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
+      <dailyStepCount  :heat-list="heatList" v-if="heatList[0].date!==''"/>
+    </el-row>
+
+
   </div>
 </template>
 
 <script>
+import { mapState, mapActions } from 'vuex'
 import GithubCorner from '@/components/GithubCorner'
 import PanelGroup from './components/PanelGroup'
 import LineChart from './components/LineChart'
@@ -20,6 +26,7 @@ import BarChart from './components/BarChart'
 import TransactionTable from './components/TransactionTable'
 import TodoList from './components/TodoList'
 import BoxCard from './components/BoxCard'
+import DailyStepCount from './components/DailyStepCount'
 
 const lineChartData = {
   newVisitis: {
@@ -51,14 +58,30 @@ export default {
     BarChart,
     TransactionTable,
     TodoList,
-    BoxCard
+    BoxCard,
+    DailyStepCount
   },
   data() {
     return {
-      lineChartData: lineChartData.newVisitis
+      lineChartData: lineChartData.newVisitis,
+      heatList: [{
+        date: '',
+        heat: 0
+      }]
     }
   },
+  created(){
+    this.getHeat()
+  },
   methods: {
+    ...mapActions('user', ['getUserHeat']),
+
+    getHeat(){
+      this.getUserHeat().then(response => {
+        this.heatList=response
+        console.log(this.heatList)
+      })
+    },
     handleSetLineChartData(type) {
       this.lineChartData = lineChartData[type]
     }

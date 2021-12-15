@@ -2,7 +2,7 @@ import { login, logout, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
 import { updateStuInfo,getQuestionFormByBookId,submitAnswer,viewBook,viewBookAtExam } from '@/api/stu_info'
-import {updateUserKWLForm,updateQuestionForm,userDataCount} from '@/api/user'
+import {updateUserKWLForm,updateQuestionForm,userDataCount,getUserHeat} from '@/api/user'
 
 const state = {
   token: getToken(),
@@ -233,6 +233,20 @@ const actions = {
   userDataCount({ state }) {
     return new Promise((resolve, reject) => {
       userDataCount(state.token).then((response) => {
+        const { data } = response
+        if (!data) {
+          reject('请求数据失败.')
+        }
+        resolve(data)
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+
+  getUserHeat({state}){
+    return new Promise(( resolve,reject) => {
+      getUserHeat(state.token).then((response) => {
         const { data } = response
         if (!data) {
           reject('请求数据失败.')

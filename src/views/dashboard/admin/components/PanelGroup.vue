@@ -66,6 +66,8 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import CountTo from 'vue-count-to'
+var echarts = require('echarts/lib/echarts')
+
 
 export default {
   data(){

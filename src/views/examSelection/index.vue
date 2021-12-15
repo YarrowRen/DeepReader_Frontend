@@ -2,21 +2,7 @@
   <el-container>
     <el-main style="text-align: center">
 
-      <div class="filter-container" style="text-align: left;">
-        <el-input placeholder="Title" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-        <el-select placeholder="Imp" clearable style="width: 90px" class="filter-item">
-          <el-option />
-        </el-select>
-        <el-select placeholder="Type" clearable class="filter-item" style="width: 130px">
-          <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-        </el-select>
-        <el-select style="width: 140px" class="filter-item" @change="handleFilter">
-          <el-option />
-        </el-select>
-        <el-button v-waves class="filter-item" type="primary" icon="el-icon-search">
-          Search
-        </el-button>
-      </div>
+
 
       <div>
         <el-col  v-for="(item, id) in this.list" :key="id" :span="6">
@@ -32,7 +18,8 @@
                   <span>所属课程：{{item.classify_name}}<br><br></span>
                   <span>所属作业：{{item.work}}<br><br></span>
                   <el-link type="warning" v-if="!item.have_answer" @click="$router.push('/exam/index?bookId='+item.id)">开始练习</el-link>
-                  <el-link type="success" v-if="item.have_answer" @click="$router.push('/exam/index?bookId='+item.id)" disabled>已练习</el-link>
+                  <el-link type="success" v-if="item.have_answer" @click="$router.push('/exam/index?bookId='+item.id)" disabled>已练习</el-link>&ensp;
+                  <el-link type="success" v-if="item.have_answer" @click="$router.push('/allQuestion/index?bookId='+item.id)">查看习题</el-link>
                 </div>
               </div>
             </el-card>

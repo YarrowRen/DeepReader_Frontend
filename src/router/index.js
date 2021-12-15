@@ -153,6 +153,19 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/allQuestion',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/allQuestion/index'),
+        name: '全部习题',
+        meta: { title: '全部习题', icon: 'icon', noCache: true }
+      }
+    ]
+  },
+  {
     path: '/examSelection',
     component: Layout,
     children: [

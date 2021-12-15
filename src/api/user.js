@@ -55,3 +55,11 @@ export function userDataCount(token) {
     params: { token }
   })
 }
+
+export function getUserHeat(token) {
+  return request({
+    url: '/user/heat',
+    method: 'get',
+    params: { token }
+  })
+}
